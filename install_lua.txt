@@ -1,0 +1,173 @@
+
+
+
+--  *    L  E  A  R  N  I  N  G       L  U  A    * 
+
+--  So it begins with simple elements and a simple
+
+--  interface:  the interactive interpreter of the
+
+--  language lua is the application you can run to
+
+--  execute a lua script.  Simply type "lua " into
+
+--  your terminal followed by the pathname of your
+
+--  file. Eg: (shell)   $ lua hello.lua
+                        Hello, world!
+--  Lua is implemented
+
+--  as a library in C.  This means that its common
+
+--  to include Lua inside of another whole program
+
+--  But we will begin by using the Lua interpreter
+
+
+
+
+...
+
+$ man lua
+
+NAME
+  lua - Lua interpreter
+
+SYNOPSIS
+  lua [ options ] [ script [ args ] ]
+
+DESCRIPTION
+  lua is the stand-alone Lua interpreter.  It 
+loads and executes Lua programs, either in textual
+source form or in precompiled binary form.
+(Precompiled binaries are output by luac, the Lua
+compiler.)  lua can be used as a batch interpreter
+and also interactively.
+
+...
+
+
+Have you reproduced the classic hello world program?
+
+When starting off with a new language it is usually
+
+good practice to follow along a kind of interactive
+
+tutorial although we also advocate for an exploratory
+
+method of learning if you can be so self directed in
+
+your study.
+
+
+
+The first step to writing a lua program is of course..
+
+-- Installing Lua:
+
+On Debian/Ubuntu systems:
+packages: lua5.1 lua5.2 lua5.3 lua5.4 are also available
+
+sudo apt install lua
+
+Or here is a terminal session from lua.org to build and
+install the latest release from source code:
+
+curl -R -O http://www.lua.org/ftp/lua-5.4.6.tar.gz
+tar zxf lua-5.4.6.tar.gz
+cd lua-5.4.6
+make all test
+ 
+MacOS: If you have brew:
+$ brew install lua
+
+Otherwise you should really install from source code.
+You can download the latest release from * lua.org *
+which is distributed in an archive (lua-5.X.Y.tar.gz)
+file to download and "unzip" with the tar zxf command.
+
+Once you have downloaded and extracted the files you
+should be left with a directory called lua-5.X.Y which
+corresponds with the Lua version number of your choice
+
+To build and install Lua in one step: make xxx install
+..where xxx is your platform name eg: macosx or linux
+
+$ cd lua-5.4.6
+
+$ sudo make macosx install
+
+..or to just build without installing:
+
+$ make macosx
+
+Linux users may try 'linux-readline' platform for more
+line editing capabilities: apt install readline-dev
+
+$ make linux-readline
+$ sudo make install
+
+If you got a permissions error you'll have to use sudo
+
+Or install locally with "make local" which will create
+a folder called install with the directory structure:
+
+bin:
+  lua luac
+include:
+  lua.h luaconf.h lualib.h lauxlib.h lua.hpp
+lib:
+  liblua.a
+man/man1:
+  lua.1 luac.1
+
+So we see there are two executable files (programs)
+included in the install. lua is the lua interpreter
+luac is the lua compiler. To run the interpreter type
+the following into your terminal:
+
+$ cd install
+$ ./bin/lua         # if you're using bash. (Linux)
+$ bash bin/lua      # if you use zshell (MacOS users)
+
+
+Execute the lua interpreter directly as above or
+if installed properly the lua command should now
+be available in your shell. Enter the following at
+in your terminal:
+
+$ lua
+
+You should see some versioning and copyright info in
+the header followed by your prompt: > _
+
+Try entering an expression.  Type the equals sign
+followed by some math expression at the prompt.
+Or try joining some strings together!
+
+
+Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio
+> = 8*8
+64
+> = "hello w" .. tostring(3*2-6) .. "rld!"
+hello w0rld!
+> _
+
+
+Welcome to Lua!
+
+
+...
+
+Did you make it this far? If you're having trouble..
+
+MacOS Users: read about brew:  https://brew.sh/
+Windows Users: read about Linux:  wiki.archlinux.org/
+Linux Users: https://www.lua.org/manual/5.4/manual.html
+
+...
+
+Here's the contents of our hello.lua program:
+--
+print("Hello, world!")
+--
