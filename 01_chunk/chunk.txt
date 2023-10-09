@@ -1,0 +1,295 @@
+
+
+In Lua there is the concept of a `chunk` which is the unit of code
+Lua will execute as a series of statements. In interactive mode
+you should notice that when you open a block (function, for, while)
+
+Lua will allow for you to enter newlines. And it will wait for you
+to close the block with a matching `end`.  The `do` keyword s used
+to begin the body of while, for, and for..in statements. Do can also
+be used on its own. All four of the loop constructs require the
+matching `end` keyword to close the block.
+
+Because Lua waits for you to finish entering in a chunk of statements
+when used in interactive mode and if used with the lua interpreter the
+program will allow you to keep entering newlines (empty newlines) once
+you've opened a block. Also if you begin to declare a table literal the
+interpreter will wait for the matching closing curly brace `}` before
+it will evaluate the code. The parser is waiting for the end of chunk.
+
+$ lua
+Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio
+> function hello(name)
+>>   -- prints hello <name>
+>>   print("hello " .. name)
+>> 
+>> end
+> t = {
+>>   name= "adam",
+>>   found_sport = true,
+>>   _
+
+You should see the special double greater-than symbol ( >> ) which does
+indicate that the interpreter is waiting for you to finish entering in
+the chunk of code has to be fully entered in before Lua can execute the
+code. This should give you some insight into the nature of how lua code
+does become a running program. Actually all that you need to construct
+any kind of computational process can be realized with so few things as
+the few looping mechanisms, as well as functions, and function closures. 
+
+So before you go do that. --realizing computational processes and all--
+I should mention to you about do blocks: do please feel free to use them
+
+But do keep in mind!  That when using the lua interpreter interactively
+each chunk that is processed is effectively wrapped inside of an extra
+do block. So when running a chunk of code, like the above hello function
+for example; in terms of the evaluation of the program, the interpreter
+will translate it to something along the lines of this:
+
+-- Your code:
+> local function hello(name) print("hello " .. name) end
+
+-- As interpreted:
+do
+  local hello
+  hello = function(name) print("hello " .. name)
+end
+
+Lua code whether typed into the interpreter or ran from a file or within
+any context of lua evaluation: is evaluated as a series of statements in
+a chunk. So that's the nature of it, really. All that can really change
+is the numbers that you put into it.
+
+If you wanted to for example run the included example: pairs.lua
+You should simply open your terminal type in "lua pairs.lua"
+
+$ lua pairs.lua_
+
+So after you type in that command you press enter to run the lua script.
+
+$ lua pair/pair.lua 
+function: 0x55c1cd65b090
+function: 0x55c1cd65af50	function: 0x55c1cd65aff0
+2	3
+5
+3	2
+2	3
+$ _
+
+Lua loaded the program as source code  (which it reads as a `chunk`)
+Lua executed the code as a series of statements: six print statements
+were made. This results in text appearing into our terminal.
+
+~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+Now what about if you wanted to run the same program but using the lua
+interpreter interactively instead? Well you might think you could just
+launch "lua" ( omitting filename argument starts in interactive mode )
+And begin declaring the constructor function `Pair(a, b)`:
+
+$ lua
+Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio
+> function Pair(a, b)
+>>   return function(n)
+>>     return n == 0
+>>       and a
+>>       or (n == 1 and b)
+>>       or "air"
+>>     end
+>>   end
+> print(Pair(1, 2))
+function: 0x55e4f0458810
+> _
+
+And that would be correct this will totally work!
+
+The problem that you might run into is that when you declare a local
+variable in the interactive interpreter the variable basically becomes
+unreachable as soon as the chunk is finished evaluating
+
+The solution is to simply widen your scope. If a local variable needs to
+be reached by another piece of code, the code that needs access to the
+variable must must be inside the same chunk as the variable declared.
+
+If you wanted to run the example program purely through the interactive
+interpreter you could simply wrap the contents within an extra do block.
+Ironically this would actually result in less overall "virtual do-blocks"
+being inserted by the interpreter because of the way this now ensures all
+of the contained program will run in a single chunk: Thx extra do-block!
+
+In fact this is just like how the interpreter understands your program if
+you have multiple lua files which are parts of your program; the way Lua
+interprets it is something is as if each file were wrapped inside of an
+extra do block.
+
+$ lua
+Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio
+> do 
+>>   local msg = "hello"
+>>   print(msg)
+>> end
+hello
+> print(msg)
+nil
+> 
+
+This is a demonstation of `scope` of which we will mention Lua has block-level
+scoping rules (functions, while, do, for statements all begin a block with its
+own scope). Code within an inner scope does have access to outer scopes but
+the reverse is not true, which is why `msg` appears as nil outside of the do
+block.  msg is a variable local to the the scope created by the do statement.
+
+
+We said earlier that you should always use local variables and the reason that
+we recommend that is simply because it makes code a lot easier to reason about
+If you limit the places where important values can be changed in your code
+strictly to the parts of your code that are necessary to operate on the values
+You can be more certain of the code you write.
+
+Matters like this are at the heart of good software design so if the whole
+idea of scope feels like it's a bit over your head at the moment don't worry
+it will become natural soon with some more practice.
+
+~~~
+
+Use a single global variable avoid polluting the global namespace:
+
+$ lua
+Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio
+> M = {}
+> M.name = "world"
+> M.greeting = "hey"
+> M.greet = function(self)
+>>   print(self.greeting .. self.name)
+>> end
+> M.greet(M)
+heyworld
+> M.greet = function(self) print(self.greeting .. " " ..  self.name) end
+> M.N = { greeting= "yoyoyo", name= "earth" }
+> M.greet(M.N)
+yoyoyo earth
+> M:greet()
+hey world
+> 
+
+Yes you read that correctly. Lua includes anonymous functions aka lambdas with
+syntax very similar to declaring a named function. In fact named functions
+are actually a bit of what's called "syntactic sugar" for what is really just
+assignment of an anonymous function to a variable. Here's how the code gets
+translated by the interpreter:
+
+-- Your code:
+local function fact(nmr)
+  if nmr == 0 then return 1
+  else return nmr * fact(nmr - 1)
+  end
+end
+
+-- Result after desugar:
+local fact = nil
+fact = function(nmr)
+  if nmr == 0 then return 1
+  else return nmr * fact(nmr - 1)
+  end
+end
+
+
+So what's the difference?  Well there isn't any effective difference between the
+two pieces of code above that's how syntactic sugar works: it only improves the
+look of the source code without causing any change in the way it's evaluated.
+
+
+Did you notice the use of the colon in the other example?
+
+> M.greet = function(self) print(self.greeting .. " " ..  self.name) end
+> M:greet()
+hey world
+
+Whats happening here? It looks like a function call and it does seem to call the
+function greet we declared as a property/field on the M object but while our
+function is defined to take one argument we didn't have to pass it in with the
+colon notation: and this is exactly how it works. Again it's simple syntactic
+sugar which makes our lives as programmers a little sweeter:
+
+-- Your code:
+> M:greet()
+
+-- Desugared:
+> M.greet(M)
+
+So that's how it works. Nothing more clear than an example. ( But you should try
+it yourself! )  Now I must mention it does also work in an kind in reverse form
+as well. Function (method) declarations when declared with the colon syntax are
+also desugared before evaluation.
+
+-- Your code:
+function M:getname(upper)
+  return upper and self.name:upper() or self.name
+end
+
+-- Desugared:
+function M.getname(self, upper)
+  return upper self.name:upper() or self.name
+end
+
+So in other words methods when called with the colon notation implicitly pass in
+the containing object (table) as the first argument to the function.
+
+And in the body of methods declared with the colon notation: the `self` variable
+is really whatever was the first argument passed in when the method is called.
+( Which would be the containing object if the method called with the colon form )
+
+You don't have to use this optional "sugar".
+But you might find it improves your experience programming.
+
+
+$ lua
+Lua 5.1.5  Copyright (C) 1994-2012 Lua.org, PUC-Rio
+> do
+>>   local fact = function(num)
+>>     if num == 0 then return 1
+>>     else return num * fact(num - 1)
+>>     end
+>>   end
+>> 
+>>   print(fact)
+>>   print(fact(5))
+>> end
+function: 0x564395e62390
+stdin:4: attempt to call global 'fact' (a nil value)
+stack traceback:
+	stdin:4: in function 'fact'
+	stdin:9: in main chunk
+	[C]: ?
+> _
+
+
+So what's this error message about then? If you were observant you will have read
+this is a recursive definition of the factorial function and like all recursive
+definitions includes a call to itself from within its own definition. Because the
+function is declared before the variable `fact` is declared, the variable can not
+be accessed from within the function. Unless we were to initially declare `fact`
+set as an empty value (nil). This is what the syntactic sugar is for. It should
+only ever affect recursive functions. It's just a feature of the language which
+should make using the language more enjoyable for the programmer.
+
+...
+
+Lua doesn't require any kind of separator between statements. It is possible to
+put two print statements on one line in fact you don't even need to leave a space
+between two consecutive function calls:
+
+> print("hello")print("world")
+hello
+world
+> _
+
+Its usually more clear to separate statements with newlines but you can also use a
+semicolon as an optional statement terminator/separator. This is usually reserved
+for multiple statements spanning one line:
+
+> function dotwice(f) f(); f(); end
+> dotwice(function() print("Remember to have fun!"); end)
+Remember to have fun!
+Remember to have fun!
+
+
